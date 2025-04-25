@@ -1,0 +1,127 @@
+---
+title: "EEG2_visualisation"
+author: "Leonardo Sutandi"
+date: "2024-10-09"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(patchwork)
+library(tidyverse)
+```
+
+# Load Datasets
+
+```{r, warning=F, echo=F, message=F}
+
+data <- read_csv("C:/R/exp_1/results/eeg/eeg.csv") |> 
+  filter(contrast == "avg")
+
+```
+
+# Left Attention
+```{r}
+dat <- 
+  data |> 
+  filter(cuePos =="left",
+         trialType == "ng")
+
+left_ng <-
+  ggplot(dat, aes(COI, eeg, fill = group)) + 
+  geom_boxplot() +
+  # geom_jitter(width = 0.2) +
+  scale_x_discrete(limits = c("left_occ", "left_par", "right_par", "right_occ"),
+                   label = c("LO", "LP", "RP", "RO")) +
+  ylim(-2000, 2500) +
+  # Remove legend
+  guides(fill=FALSE)
+
+dat <- 
+  data |> 
+  filter(cuePos =="left",
+         trialType == "g")
+
+left_g <-
+  ggplot(dat, aes(COI, eeg, fill = group)) + 
+  geom_boxplot() +
+  # geom_jitter(width = 0.2) +
+  scale_x_discrete(limits = c("left_occ", "left_par", "right_par", "right_occ"),
+                   label = c("LO", "LP", "RP", "RO")) +
+  ylim(-2000, 2500) 
+
+left_att <- left_ng + left_g + 
+  plot_annotation(title = "Left Attention (NG - G)")
+print(left_ng)
+print(left_g)
+print(left_att)
+```
+
+# Right Attention
+```{r}
+dat <- 
+  data |> 
+  filter(cuePos =="right",
+         trialType == "ng")
+
+right_ng <-
+  ggplot(dat, aes(COI, eeg, fill = group)) + 
+  geom_boxplot() +
+  # geom_jitter(width = 0.2) +
+  scale_x_discrete(limits = c("left_occ", "left_par", "right_par", "right_occ"),
+                   label = c("LO", "LP", "RP", "RO")) +
+  ylim(-2000, 2500) +
+  # Remove legend
+  guides(fill=FALSE)
+
+dat <- 
+  data |> 
+  filter(cuePos =="right",
+         trialType == "g")
+
+right_g <-
+  ggplot(dat, aes(COI, eeg, fill = group)) + 
+  geom_boxplot() +
+  # geom_jitter(width = 0.2) +
+  scale_x_discrete(limits = c("left_occ", "left_par", "right_par", "right_occ"),
+                   label = c("LO", "LP", "RP", "RO")) +
+  ylim(-2000, 2500) 
+
+right_att <- right_ng + right_g + 
+  plot_annotation(title = "Right Attention (NG - G)")
+print(right_ng)
+print(right_g)
+print(right_att)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

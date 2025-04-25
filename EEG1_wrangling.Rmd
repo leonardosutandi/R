@@ -1,0 +1,318 @@
+---
+title: "EEG1_wrangling"
+author: "Leonardo Sutandi"
+date: "2024-10-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggResidpanel)
+library(patchwork)
+library(tidyverse)
+```
+
+
+# Data Wrangling
+```{r, message=F, warning=F, echo=FALSE}
+
+# Control
+dataEEG_C <- 
+  read_csv("C:/MATLAB/exp_1/results/EEG/conditions/C/dataEEG_C.csv") |> 
+  mutate(group = "C", 
+         id = 1:n(), 
+         .before = 1) |>
+  # Spatial Contrast
+  mutate(ng_left_left_occ_san = ng_left_left_occ_avg - ng_neutral_left_occ_avg,
+         ng_left_right_occ_san = ng_left_right_occ_avg - ng_neutral_right_occ_avg,
+         ng_left_left_par_san = ng_left_left_par_avg - ng_neutral_left_par_avg,
+         ng_left_right_par_san = ng_left_right_par_avg - ng_neutral_right_par_avg,
+         
+         ng_right_left_occ_san = ng_right_left_occ_avg - ng_neutral_left_occ_avg,
+         ng_right_right_occ_san = ng_right_right_occ_avg - ng_neutral_right_occ_avg,
+         ng_right_left_par_san = ng_right_left_par_avg - ng_neutral_left_par_avg,
+         ng_right_right_par_san = ng_right_right_par_avg - ng_neutral_right_par_avg,
+         
+         g_left_left_occ_san = g_left_left_occ_avg - g_neutral_left_occ_avg,
+         g_left_right_occ_san = g_left_right_occ_avg - g_neutral_right_occ_avg,
+         g_left_left_par_san = g_left_left_par_avg - g_neutral_left_par_avg,
+         g_left_right_par_san = g_left_right_par_avg - g_neutral_right_par_avg,
+         
+         g_right_left_occ_san = g_right_left_occ_avg - g_neutral_left_occ_avg,
+         g_right_right_occ_san = g_right_right_occ_avg - g_neutral_right_occ_avg,
+         g_right_left_par_san = g_right_left_par_avg - g_neutral_left_par_avg,
+         g_right_right_par_san = g_right_right_par_avg - g_neutral_right_par_avg) |> 
+  # BL Corrected
+  mutate(ng_left_left_occ_blc = ng_left_left_occ_avg - ng_left_left_occ_bl,
+         ng_left_right_occ_blc = ng_left_right_occ_avg - ng_left_right_occ_bl,
+         ng_left_left_par_blc = ng_left_left_par_avg - ng_left_left_par_bl,
+         ng_left_right_par_blc = ng_left_right_par_avg - ng_left_right_par_bl,
+         
+         ng_right_left_occ_blc = ng_right_left_occ_avg - ng_right_left_occ_bl,
+         ng_right_right_occ_blc = ng_right_right_occ_avg - ng_right_right_occ_bl,
+         ng_right_left_par_blc = ng_right_left_par_avg - ng_right_left_par_bl,
+         ng_right_right_par_blc = ng_right_right_par_avg - ng_right_right_par_bl,
+         
+         g_left_left_occ_blc = g_left_left_occ_avg - g_left_left_occ_bl,
+         g_left_right_occ_blc = g_left_right_occ_avg - g_left_right_occ_bl,
+         g_left_left_par_blc = g_left_left_par_avg - g_left_left_par_bl,
+         g_left_right_par_blc = g_left_right_par_avg - g_left_right_par_bl,
+         
+         g_right_left_occ_blc = g_right_left_occ_avg - g_right_left_occ_bl,
+         g_right_right_occ_blc = g_right_right_occ_avg - g_right_right_occ_bl,
+         g_right_left_par_blc = g_right_left_par_avg - g_right_left_par_bl,
+         g_right_right_par_blc = g_right_right_par_avg - g_right_right_par_bl) |> 
+  pivot_longer(cols = 3:82,
+               names_to = c("trialType", "cuePos", "hemi", "region", "contrast"),
+               names_sep = "_", 
+               values_to = "eeg") |> 
+  mutate(direction = case_when(cuePos == "left" & hemi == "left" ~ "ipsi",
+                               cuePos == "right" & hemi == "right" ~ "ipsi",
+                               cuePos == "left" & hemi == "right" ~ "contra",
+                               cuePos == "right" & hemi == "left" ~ "contra", 
+                               cuePos == "neutral" ~ "neutral")) |> 
+  unite("COI", c(hemi, region), sep = "_")
+  
+
+dataEEG_C$group <- as.factor(dataEEG_C$group)
+dataEEG_C$id <- as.factor(dataEEG_C$id)
+dataEEG_C$trialType <- as.factor(dataEEG_C$trialType)
+dataEEG_C$cuePos <- as.factor(dataEEG_C$cuePos)
+# dataEEG_C$hemi <- as.factor(dataEEG_C$hemi)
+# dataEEG_C$region <- as.factor(dataEEG_C$region)
+dataEEG_C$COI <- as.factor(dataEEG_C$COI)
+dataEEG_C$direction <- as.factor(dataEEG_C$direction)
+
+write.csv(dataEEG_C, "C:/R/exp_1/results/eeg/eeg_C.csv")
+
+
+# Migraine
+dataEEG_M <- 
+  read_csv("C:/MATLAB/exp_1/results/EEG/conditions/M/dataEEG_M.csv") |> 
+  mutate(group = "M", 
+         id = 1:n(), 
+         .before = 1) |>
+  # Spatial Contrast
+  mutate(ng_left_left_occ_san = ng_left_left_occ_avg - ng_neutral_left_occ_avg,
+         ng_left_right_occ_san = ng_left_right_occ_avg - ng_neutral_right_occ_avg,
+         ng_left_left_par_san = ng_left_left_par_avg - ng_neutral_left_par_avg,
+         ng_left_right_par_san = ng_left_right_par_avg - ng_neutral_right_par_avg,
+         
+         ng_right_left_occ_san = ng_right_left_occ_avg - ng_neutral_left_occ_avg,
+         ng_right_right_occ_san = ng_right_right_occ_avg - ng_neutral_right_occ_avg,
+         ng_right_left_par_san = ng_right_left_par_avg - ng_neutral_left_par_avg,
+         ng_right_right_par_san = ng_right_right_par_avg - ng_neutral_right_par_avg,
+         
+         g_left_left_occ_san = g_left_left_occ_avg - g_neutral_left_occ_avg,
+         g_left_right_occ_san = g_left_right_occ_avg - g_neutral_right_occ_avg,
+         g_left_left_par_san = g_left_left_par_avg - g_neutral_left_par_avg,
+         g_left_right_par_san = g_left_right_par_avg - g_neutral_right_par_avg,
+         
+         g_right_left_occ_san = g_right_left_occ_avg - g_neutral_left_occ_avg,
+         g_right_right_occ_san = g_right_right_occ_avg - g_neutral_right_occ_avg,
+         g_right_left_par_san = g_right_left_par_avg - g_neutral_left_par_avg,
+         g_right_right_par_san = g_right_right_par_avg - g_neutral_right_par_avg) |> 
+  # BL Corrected
+  mutate(ng_left_left_occ_blc = ng_left_left_occ_avg - ng_left_left_occ_bl,
+         ng_left_right_occ_blc = ng_left_right_occ_avg - ng_left_right_occ_bl,
+         ng_left_left_par_blc = ng_left_left_par_avg - ng_left_left_par_bl,
+         ng_left_right_par_blc = ng_left_right_par_avg - ng_left_right_par_bl,
+         
+         ng_right_left_occ_blc = ng_right_left_occ_avg - ng_right_left_occ_bl,
+         ng_right_right_occ_blc = ng_right_right_occ_avg - ng_right_right_occ_bl,
+         ng_right_left_par_blc = ng_right_left_par_avg - ng_right_left_par_bl,
+         ng_right_right_par_blc = ng_right_right_par_avg - ng_right_right_par_bl,
+         
+         g_left_left_occ_blc = g_left_left_occ_avg - g_left_left_occ_bl,
+         g_left_right_occ_blc = g_left_right_occ_avg - g_left_right_occ_bl,
+         g_left_left_par_blc = g_left_left_par_avg - g_left_left_par_bl,
+         g_left_right_par_blc = g_left_right_par_avg - g_left_right_par_bl,
+         
+         g_right_left_occ_blc = g_right_left_occ_avg - g_right_left_occ_bl,
+         g_right_right_occ_blc = g_right_right_occ_avg - g_right_right_occ_bl,
+         g_right_left_par_blc = g_right_left_par_avg - g_right_left_par_bl,
+         g_right_right_par_blc = g_right_right_par_avg - g_right_right_par_bl) |> 
+  pivot_longer(cols = 3:82,
+               names_to = c("trialType", "cuePos", "hemi", "region", "contrast"),
+               names_sep = "_", 
+               values_to = "eeg") |> 
+  mutate(direction = case_when(cuePos == "left" & hemi == "left" ~ "ipsi",
+                               cuePos == "right" & hemi == "right" ~ "ipsi",
+                               cuePos == "left" & hemi == "right" ~ "contra",
+                               cuePos == "right" & hemi == "left" ~ "contra", 
+                               cuePos == "neutral" ~ "neutral")) |> 
+  unite("COI", c(hemi, region), sep = "_")
+
+dataEEG_M$group <- as.factor(dataEEG_M$group)
+dataEEG_M$id <- as.factor(dataEEG_M$id)
+dataEEG_M$trialType <- as.factor(dataEEG_M$trialType)
+dataEEG_M$cuePos <- as.factor(dataEEG_M$cuePos)
+# dataEEG_M$hemi <- as.factor(dataEEG_M$hemi)
+# dataEEG_M$region <- as.factor(dataEEG_M$region)
+dataEEG_M$COI <- as.factor(dataEEG_M$COI)
+dataEEG_M$direction <- as.factor(dataEEG_M$direction)
+
+write.csv(dataEEG_M, "C:/R/exp_1/results/eeg/eeg_M.csv")
+
+fullData <- 
+  full_join(dataEEG_C, dataEEG_M) 
+write.csv(fullData, "C:/R/exp_1/results/eeg/eeg.csv")  
+```
+
+
+# Working Data ------------------------------------------------------------------------------------------------
+```{r}
+data <- 
+  fullData |> 
+  filter(contrast == "san")
+```
+# -------------------------------------------------------------------------------------------------------------
+
+
+# Left Attention
+```{r}
+dat <- 
+  data |> 
+  filter(cuePos =="left",
+         trialType == "ng")
+
+left_ng <-
+  ggplot(dat, aes(COI, eeg, fill = group)) + 
+  geom_boxplot() +
+  # geom_jitter(width = 0.2) +
+  scale_x_discrete(limits = c("left_occ", "left_par", "right_par", "right_occ"),
+                   label = c("LO", "LP", "RP", "RO")) +
+  ylim(-2000, 2500) +
+  # Remove legend
+  guides(fill=FALSE)
+
+dat <- 
+  data |> 
+  filter(cuePos =="left",
+         trialType == "g")
+
+left_g <-
+  ggplot(dat, aes(COI, eeg, fill = group)) + 
+  geom_boxplot() +
+  # geom_jitter(width = 0.2) +
+  scale_x_discrete(limits = c("left_occ", "left_par", "right_par", "right_occ"),
+                   label = c("LO", "LP", "RP", "RO")) +
+  ylim(-2000, 2500) 
+
+left_att <- left_ng + left_g + 
+  plot_annotation(title = "Left Attention (NG - G)")
+print(left_ng)
+print(left_g)
+print(left_att)
+```
+
+# Right Attention
+```{r}
+dat <- 
+  data |> 
+  filter(cuePos =="right",
+         trialType == "ng")
+
+right_ng <-
+  ggplot(dat, aes(COI, eeg, fill = group)) + 
+  geom_boxplot() +
+  # geom_jitter(width = 0.2) +
+  scale_x_discrete(limits = c("left_occ", "left_par", "right_par", "right_occ"),
+                   label = c("LO", "LP", "RP", "RO")) +
+  ylim(-2000, 2500) +
+  # Remove legend
+  guides(fill=FALSE)
+
+dat <- 
+  data |> 
+  filter(cuePos =="right",
+         trialType == "g")
+
+right_g <-
+  ggplot(dat, aes(COI, eeg, fill = group)) + 
+  geom_boxplot() +
+  # geom_jitter(width = 0.2) +
+  scale_x_discrete(limits = c("left_occ", "left_par", "right_par", "right_occ"),
+                   label = c("LO", "LP", "RP", "RO")) +
+  ylim(-2000, 2500) 
+
+right_att <- right_ng + right_g + 
+  plot_annotation(title = "Right Attention (NG - G)")
+print(right_ng)
+print(right_g)
+print(right_att)
+```
+
+# ANOVA
+```{r}
+
+aovStats1 <-
+  aov(data = data,
+      formula = eeg ~ group * trialType * cuePos * COI)
+
+aovStats2 <-
+  afex::aov_ez(id = "id",
+               dv = "eeg",
+               data = data,
+               # between = c("group"),
+               within = c("trialType", "group", "cuePos"))
+
+summary(aovStats1)
+```
+
+# LMM
+```{r}
+fm <-
+  lme4::lmer(eeg ~ group * trialType * cuePos  * COI + (1|id),
+             data = data,
+             REML = T)
+resid_panel(fm, smoother = TRUE, qqbands = TRUE)
+summary(fm)
+```
+
+# LMM Reduced
+```{r}
+rm1 <-
+  lme4::lmer(eeg ~  trialType * cuePos  * COI + (1|id),
+             data = data)
+resid_panel(rm1, smoother = TRUE, qqbands = TRUE)
+summary(rm1)
+# rm2 <-
+#   lme4::lmer(eeg ~ trialType * COI + (1|id),
+#              data = data)
+```
+
+# Model Comparison
+```{r}
+anova(fm, rm1) # Group effect present (p < 0.0001)
+# anova(fm, rm2) # no effect on cue position
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
