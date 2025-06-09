@@ -369,6 +369,7 @@ cleanData <-
 
 write_csv(cleanData, paste0("C:/R/exp_1/results/BEH/indv_merge_dataset/", participantSave, ".csv"))
 ```
+
 ## Combine removed numLabel & Export to Matlab
 ```{r}
 
